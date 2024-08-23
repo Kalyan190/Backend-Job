@@ -59,10 +59,10 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import dotenv from "dotenv";
 import connectDb from "./utils/database.js";
-import userRoute from '../backend/routes/user.routes.js';
-import companyRoute from '../backend/routes/company.route.js';
-import jobRoute from '../backend/routes/job.routes.js';
-import applicationRoute from '../backend/routes/application.route.js';
+import userRoute from './routes/user.routes.js';
+import companyRoute from './routes/company.route.js';
+import jobRoute from './routes/job.routes.js';
+import applicationRoute from './routes/application.route.js';
 
 dotenv.config();
 
