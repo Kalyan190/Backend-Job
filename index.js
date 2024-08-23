@@ -74,7 +74,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 const corsOptions = {
-   origin: 'https://job-portal-epbf.vercel.app', // Allow only requests from this origin
+   origin: ['https://job-portal-epbf.vercel.app','http://localhost:5173'], // Allow only requests from this origin
    methods: 'GET,POST,PUT,OPTIONS,DELETE,UPDATE,PATCH', // Allow only these methods
    credentials: true, // Allow credentials (cookies, authorization headers)
    //allowedHeaders: ['Content-Type', 'Authorization'], // Allow only these headers
