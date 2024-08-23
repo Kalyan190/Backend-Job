@@ -77,7 +77,7 @@ const corsOptions = {
    origin: 'https://job-portal-epbf.vercel.app', // Allow only requests from this origin
    methods: 'GET,POST,PUT,OPTIONS,DELETE,UPDATE,PATCH', // Allow only these methods
    credentials: true, // Allow credentials (cookies, authorization headers)
-   allowedHeaders: ['Content-Type', 'Authorization'], // Allow only these headers
+   //allowedHeaders: ['Content-Type', 'Authorization'], // Allow only these headers
 };
 
 app.use(cors(corsOptions)); // Use CORS middleware with specified options
