@@ -4,51 +4,73 @@ import jwt from "jsonwebtoken"
 import getDataUri from "../utils/dataurl.js";
 import cloudinary from "../utils/cloudinary.js";
 
-export const register = async(req,res) =>{
-       try {
-            const {fullname,email,phonenumber,password,role} = req.body;
+export const register = async (req, res) => {
+   try {
+      const { fullname, email, phonenumber, password, role } = req.body;
 
+      // Check if all required fields are provided
+      if (!fullname || !email || !phonenumber || !password || !role) {
+         return res.status(400).json({
+            message: "Something is missing",
+            success: false
+         });
+      }
 
-            if(!fullname || !email || !phonenumber || !password || !role){
-                  return res.status(400).json({
-                        message:"something is missing",
-                        success: false
-                  })
-            }
-            // cloudinary setup
-            const file = req.file;
+      // Check if a user already exists with the provided email
+      const user = await User.findOne({ email });
+      if (user) {
+         return res.status(400).json({
+            message: "User already exists with this email",
+            success: false
+         });
+      }
+
+      // Handle file upload (profile photo)
+      let profilePhotoUrl = "";
+      const file = req.file;
+      if (file) {
+         try {
             const fileUri = getDataUri(file);
-            const cloudResponse = await cloudinary.uploader.upload(fileUri.content)
+            const cloudResponse = await cloudinary.uploader.upload(fileUri.content);
+            profilePhotoUrl = cloudResponse.secure_url;
+         } catch (error) {
+            console.log("Cloudinary upload error:", error);
+            return res.status(500).json({
+               message: "Error uploading profile photo",
+               success: false
+            });
+         }
+      }
 
-            const user = await User.findOne({email})
-            if(user){
-                  return res.status(400).json({
-                        message:"User already exit this email",
-                        success: false
-                  })
-            }
-            const hashedPassword = await bcrypt.hash(password,10);
-            await User.create({
-                  fullname,
-                  email,
-                  phonenumber,
-                  password:hashedPassword,
-                  role,
-                  profile:{
-                     profilePhoto:cloudResponse.secure_url
-                  }
-            })
+      // Hash the password before saving
+      const hashedPassword = await bcrypt.hash(password, 10);
 
-            return res.status(201).json({
-                  message:"Account created successfully.",
-                  success:true
-            })
+      // Create the user with or without a profile photo
+      await User.create({
+         fullname,
+         email,
+         phonenumber,
+         password: hashedPassword,
+         role,
+         profile: {
+            profilePhoto: profilePhotoUrl // Save the profile photo URL if available
+         }
+      });
 
-       } catch (error) {
-            console.log(error)
-       }
+      return res.status(201).json({
+         message: "Account created successfully.",
+         success: true
+      });
 
+   } catch (error) {
+      console.log(error);
+      return res.status(500).json({
+         message: "Internal Server Error",
+         success: false
+      });
+   }
 }
+
 
 export const login = async (req,res)=>{
       try {
