@@ -44,32 +44,61 @@ export const postJob = async (req,res)=>{
 export const editJobPost = async (req, res) => {
    try {
       const jobId = req.params.id;
+
+      // Destructure and validate input fields
       const { title, description, requirements, salary, location, jobType, experience, position, companyId } = req.body;
 
+      // console.log(title, description, requirements, salary, location, jobType, experience, position, companyId);
+
+      // Check for missing required fields
       if (!title || !description || !requirements || !salary || !location || !jobType || !experience || !position || !companyId) {
          return res.status(400).json({
             message: "Something is missing.",
             success: false
          });
       }
-
-      let requirementsArray;
+ 
+      // Parse and convert fields as necessary
+      let requirementsArray = [];
       if (requirements) {
-         requirementsArray = requirements.split(",");
+         try {
+            // Convert requirements to an array, handling cases where it might already be an array
+            requirementsArray = Array.isArray(requirements) ? requirements : requirements.split(",").map(req => req.trim());
+         } catch (parseError) {
+            return res.status(400).json({
+               message: "Error parsing requirements. Please ensure it's a valid comma-separated string.",
+               success: false
+            });
+         }
       }
 
-      const updatedJob = await Job.findByIdAndUpdate(jobId, {
-         title,
-         description,
-         requirements: requirementsArray,
-         salary: Number(salary),
-         location,
-         jobType,
-         experienceLevel: experience,
-         position,
-         company: companyId
-      }, { new: true });
+      // Convert salary to a number, and check for valid number input
+      const parsedSalary = Number(salary);
+      if (isNaN(parsedSalary) || parsedSalary <= 0) {
+         return res.status(400).json({
+            message: "Invalid salary format. It should be a positive number.",
+            success: false
+         });
+      }
 
+      // Attempt to update the job post
+      const updatedJob = await Job.findByIdAndUpdate(
+         jobId,
+         {
+            title,
+            description,
+            requirements: requirementsArray,
+            salary: parsedSalary,
+            location,
+            jobType,
+            experienceLevel: experience,
+            position,
+            company: companyId
+         },
+         { new: true, runValidators: true } // Enforce validation when updating
+      );
+
+      // Check if the job was found and updated
       if (!updatedJob) {
          return res.status(404).json({
             message: "Job not found.",
@@ -77,6 +106,7 @@ export const editJobPost = async (req, res) => {
          });
       }
 
+      // Successful response
       return res.status(200).json({
          message: "Job updated successfully.",
          job: updatedJob,
@@ -84,13 +114,15 @@ export const editJobPost = async (req, res) => {
       });
 
    } catch (error) {
-      console.log(error);
+      console.error("Error updating job:", error); // Log detailed error for debugging
       res.status(500).json({
          message: "Server error.",
          success: false
       });
    }
 };
+
+
 
 export const deleteJobPost = async (req, res) => {
    try {
