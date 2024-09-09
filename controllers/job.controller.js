@@ -127,6 +127,11 @@ export const editJobPost = async (req, res) => {
 export const deleteJobPost = async (req, res) => {
    try {
       const jobId = req.params.id;
+
+      // Delete all applications related to the job
+      await Application.deleteMany({ job: jobId });
+
+      // Delete the job post
       const deletedJob = await Job.findByIdAndDelete(jobId);
 
       if (!deletedJob) {
@@ -137,7 +142,7 @@ export const deleteJobPost = async (req, res) => {
       }
 
       return res.status(200).json({
-         message: "Job deleted successfully.",
+         message: "Job and associated applications deleted successfully.",
          success: true
       });
 
@@ -149,6 +154,7 @@ export const deleteJobPost = async (req, res) => {
       });
    }
 };
+
 
 
 
