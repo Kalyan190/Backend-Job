@@ -154,72 +154,68 @@ export const logout = async (req,res)=>{
       }
 }
 
-export const updateprofile = async (req,res)=>{
-      try {
-            const {fullname,email,phonenumber,bio,skills} = req.body;
-         
-            // if(!fullname || !email || !phonenumber || !bio || !skills){
-            //       return res.status(400).json({
-            //             message:"something is missing",
-            //             success: false
-            //       })
-            // }
-            let skillsArray;
-            if(skills){
-               skillsArray = skills.split(",");
-            }
-            
-            const userId = req.id;
-            const file = req.file;
-             // cloudinary setup
-            const fileUri = getDataUri(file);
-            const cloudResponse = await cloudinary.uploader.upload(fileUri.content)
+export const updateProfile = async (req, res) => {
+   try {
+      const { fullname, email, phonenumber, bio, skills } = req.body;
 
-
-            let user = await User.findById(userId);
-
-            if(!user){
-                  return res.status(400).json({
-                        message:"User not found.",
-                        success:false
-                  })
-            }
-          
-
-
-            // update data
-            if(fullname)user.fullname = fullname;
-            if(email)user.email = email;
-            if(phonenumber)user.phonenumber = phonenumber;
-            if(bio) user.profile.bio = bio;
-            if(skills)user.profile.skills = skillsArray;
-            
-            //resume update
-            if(cloudResponse){
-               user.profile.resume = cloudResponse.secure_url;
-               user.profile.resumeOriginalName = file.originalname;
-            }
-
-           await user.save();
-
-           user = {
-            _id: user._id,
-            fullname: user.fullname,
-            email: user.email,
-            phonenumber: user.phonenumber,
-            role: user.role,
-            profile:user.profile
-
-          }
-         
-          return res.status(200).json({
-            message:"Profile updated successfully.",
-            user,
-            success:true
-          })
-
-
-      } catch (error) {
-            console.log(error)
+      let skillsArray;
+      if (skills) {
+         skillsArray = skills.split(",");
       }
-}
+
+      const userId = req.id;
+      const file = req.file;
+
+      let cloudResponse;
+      if (file) {
+         // Cloudinary setup
+         const fileUri = getDataUri(file);
+         cloudResponse = await cloudinary.uploader.upload(fileUri.content);
+      }
+
+      let user = await User.findById(userId);
+
+      if (!user) {
+         return res.status(400).json({
+            message: "User not found.",
+            success: false,
+         });
+      }
+
+      // Update data
+      if (fullname) user.fullname = fullname;
+      if (email) user.email = email;
+      if (phonenumber) user.phonenumber = phonenumber;
+      if (bio) user.profile.bio = bio;
+      if (skills) user.profile.skills = skillsArray;
+
+      // Resume update
+      if (cloudResponse) {
+         user.profile.resume = cloudResponse.secure_url;
+         user.profile.resumeOriginalName = file.originalname;
+      }
+
+      await user.save();
+
+      user = {
+         _id: user._id,
+         fullname: user.fullname,
+         email: user.email,
+         phonenumber: user.phonenumber,
+         role: user.role,
+         profile: user.profile,
+      };
+
+      return res.status(200).json({
+         message: "Profile updated successfully.",
+         user,
+         success: true,
+      });
+   } catch (error) {
+      console.log(error);
+      return res.status(500).json({
+         message: "An error occurred while updating the profile.",
+         success: false,
+      });
+   }
+};
