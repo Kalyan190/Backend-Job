@@ -154,7 +154,7 @@ export const logout = async (req,res)=>{
       }
 }
 
-export const updateProfile = async (req, res) => {
+export const updateprofile = async (req, res) => {
    try {
       const { fullname, email, phonenumber, bio, skills } = req.body;
 
